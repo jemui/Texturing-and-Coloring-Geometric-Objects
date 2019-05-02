@@ -1,5 +1,5 @@
 // Vertex Shader
-var ASG1_VSHADER =
+var ASG3_VSHADER =
   `precision mediump float;
   attribute vec4 a_Position;
   attribute vec4 a_Color;
@@ -15,12 +15,12 @@ var ASG1_VSHADER =
   }`;
 
 // Fragment Shader
-var ASG1_FSHADER =
+var ASG3_FSHADER =
   `precision mediump float;
   varying vec4 v_Color;
   uniform sampler2D u_Sampler;
   varying vec2 v_TexCoord;
 
   void main() {
-    gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+    gl_FragColor = texture2D(u_Sampler, v_TexCoord)+v_Color;
   }`;

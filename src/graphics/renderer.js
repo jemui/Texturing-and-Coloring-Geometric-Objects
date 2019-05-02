@@ -19,6 +19,8 @@ class Renderer {
         this.scene = scene;
         this.camera = camera;
 
+        this.textures = {};
+
         this.initGLSLBuffers();
 
         // Setting canvas' clear color
@@ -46,31 +48,28 @@ class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
         for (var i = 0; i < this.scene.geometries.length; i++) {
+            var geometry = this.scene.geometries[i];
+
             // Switch to shader attached to geometry
-            this.gl.useProgram(this.scene.geometries[i].shader.program)
-            this.gl.program = this.scene.geometries[i].shader.program
+            this.gl.useProgram(geometry.shader.program)
+            this.gl.program = geometry.shader.program
 
             // Callback function in the case user wants to change the
             // geometry before the draw call
-            this.scene.geometries[i].render();
+            geometry.render();
 
-            // Check if geometry has an image
-            if(this.scene.geometries[i].image != null) {
-                // Create a GPU texture object
-                var gpuTexture = this.gl.createTexture(); 
-
-                if(!gpuTexture) {
-                    console.log('Failed to create the texture object');
-                    return false;
+            if(geometry.image != null) {
+                if(!(geometry.image.src in this.textures)) {
+                    // Create a texture object and store id using its path as key
+                    this.textures[geometry.image.src] = this.gl.createTexture();
+                    this.loadTexture(this.textures[geometry.image.src], geometry.image);
                 }
-                var u_Sampler = this.scene.geometries[i].shader.uniforms["u_Sampler"];
-                this.loadTexture(gpuTexture, u_Sampler, this.scene.geometries[i].image);
             }
 
             // Draw geometry
-            var geometry = this.scene.geometries[i];
             this.sendVertexDataToGLSL(geometry.data, geometry.dataCounts, geometry.shader);
             this.sendIndicesToGLSL(geometry.indices);
+
             this.drawBuffer(geometry.indices.length)
         }
     }
@@ -121,6 +120,7 @@ class Renderer {
           this.gl.enableVertexAttribArray(attribute);
 
           currentDataStart += FSIZE * dataCounts[i];
+          i += 1;
        }
 
        // Send uniforms
@@ -157,6 +157,9 @@ class Renderer {
             case "mat4":
               this.gl.uniformMatrix4fv(uniform.location, false, uniform.value);
               break;
+            case "sampler2D":
+              this.gl.uniform1i(uniform.location, uniform.value);
+              break;
         }
     }
 
@@ -179,28 +182,21 @@ class Renderer {
         this.gl.drawElements(this.gl.TRIANGLES, indicesLength, this.gl.UNSIGNED_SHORT, 0);
     }
 
-    /** 
-     * Binds the texture
-     */
-    loadTexture(gpuTexture, u_Sampler, image) { 
-        // Get the storage location of u_Sampler
-        var sampler = this.gl.getUniformLocation(this.gl.program, 'u_Sampler');
-
-        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+    loadTexture(texture, image) {
+        // Flip the image's y axis
+        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, 1);
 
         // Enable texture unit0
         this.gl.activeTexture(this.gl.TEXTURE0);
 
         // Bind the texture object to the target
-        this.gl.bindTexture(this.gl.TEXTURE_2D, gpuTexture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
         // Set the texture parameters
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
 
         // Set the texture image
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGB, this.gl.RGB, this.gl.UNSIGNED_BYTE, image);
-        
-        // Set the texture unit 0 to the sampler
-        this.gl.uniform1i(sampler, 0);
-    }   
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+    }
 }

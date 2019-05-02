@@ -18,16 +18,14 @@ function main() {
   var inputHandler = new InputHandler(canvas, scene);
 
   // Initialize shader
-  shader = new Shader(gl, ASG1_VSHADER, ASG1_FSHADER);
-
-  // Texture shader
+  shader = new Shader(gl, ASG3_VSHADER, ASG3_FSHADER);
 
   // Add attibutes
   shader.addAttribute("a_Position");
   shader.addAttribute("a_Color");
- // shader.addAttribute("a_TexCoord");
+  shader.addAttribute("a_TexCoord");
 
-  // Add uniforms to dictionary
+  // Add uniforms
   var idMatrix = new Matrix4();
   shader.addUniform("u_ModelMatrix", "mat4", idMatrix.elements);
   shader.addUniform("u_Sampler", "sampler2D", 0);
@@ -35,6 +33,12 @@ function main() {
   // Initialize renderer with scene and camera
   renderer = new Renderer(gl, scene, null);
   renderer.start();
+
+//  var image = new Image();
+ // image.src = 'objs/sky.jpg';
+
+  var shape = new Cube(shader, 0.5, 0.5);
+  scene.addGeometry(shape);
 
   // Update global counter for fluctuating triangles
   var tick = function() {
@@ -47,5 +51,4 @@ function main() {
     requestAnimationFrame(tick);
   }
   tick();
-  
 }

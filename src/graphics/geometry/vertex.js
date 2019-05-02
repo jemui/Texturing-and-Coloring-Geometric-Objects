@@ -6,8 +6,11 @@
  */
 class Vertex {
   constructor(x, y, z) {
-      this.point  = new Vector3([x, y, z]);
-      
+      this.point    = new Vector3([x, y, z]);
+     // this.color    = [1.0, 0.0, 0.0, 1.0];
+
+      // textures should ignore color 
+      // if this.image == null? 
       var col = document.getElementById("changeColor").value;
 
       if(col == "Solid Color 😞") {
@@ -23,6 +26,8 @@ class Vertex {
       }
 
       this.color  = [r, g, b, 1.0];
+
+      this.texCoord = [0.0, 0.0];
 
       // This class can be extended to support other attributes such as
       // normals and UV coordinates.

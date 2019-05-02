@@ -55,8 +55,10 @@ class InputHandler {
             return;
         }
 
+        
         fileReader.readAsText(objFile);
         fileReader.onloadend = function() {
+            console.log("texture: "+ _inputHandler.image);
             var customObj = new CustomOBJ(shader, fileReader.result);
             console.log(customObj);
             _inputHandler.scene.addGeometry(customObj);
@@ -64,30 +66,25 @@ class InputHandler {
     }
 
     readTexture() {
-        var image = new Image();  // Create the image object
-       // img.crossOrigin = "anonymous";
-
+        // Create the image object
+        var image = new Image();
         if (!image) {
-            console.log('Failed to create the image object');
-            return false;
-        } else { 
-            this.image = image;
+          console.log('Failed to create the image object');
+          return false;
         }
+
         // Register the event handler to be called on loading an image
-        // image.onload = function(){ 
-        //     this.image = image;
-        //     console.log("load texture: " + this.image);
-        //     //_inputHander.image = image;
-        //    // loadTexture(gl, n, texture, u_Sampler, image);
-        // };
+        image.onload = function() {
+            _inputHandler.image = image;
+        };
+
+        var imgPath = document.getElementById("texInput").value;
+        var imgPathSplit = imgPath.split("\\");
 
         // Tell the browser to load an image
-        var texturePath = document.getElementById('texInput').value;
-        var texturePathSplit = texturePath.split("\\");
-        var filename = texturePathSplit[texturePathSplit.length-1];
-
-        image.src = "objs/" + filename;
-        console.log("load texture: " + this.image);
+        image.src = 'objs/' + imgPathSplit[imgPathSplit.length - 1];
+        console.log("loaded "+ image.src);
+        return true;
     }
 
 
@@ -104,7 +101,7 @@ class InputHandler {
         // Passes in mouse position to shapes
         // each triangle should have its own function call to update itself
         if(triangle == true && document.getElementById("tri").innerHTML == "true") {
-            var shape = new Triangle(shader,ev.clientX, ev.clientY);
+            var shape = new Triangle(shader,ev.clientX, ev.clientY,this.image);
             this.scene.addGeometry(shape);        
         } else if(document.getElementById("sqr").innerHTML == "true") {
             var shape = new Square(shader,ev.clientX, ev.clientY);
@@ -114,8 +111,6 @@ class InputHandler {
             this.scene.addGeometry(shape);
         } else if(document.getElementById("cube").innerHTML == "true"){
             var shape = new Cube(shader,ev.clientX, ev.clientY, this.image);
-            console.log("input: " + this.image);
-            console.log("_input: " + _inputHandler.image);
             this.scene.addGeometry(shape);
         }
     }

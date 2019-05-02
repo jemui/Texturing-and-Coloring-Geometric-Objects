@@ -17,7 +17,8 @@ class CustomOBJ extends Geometry {
    */
   constructor(shader, objStr, imgPath) {
     super(shader);
-
+    console.log("loaded " + imgPath);
+    
     // If an image path/data url is provided, then load/save that image as a texture
     if (imgPath != null) {
       var self = this;
@@ -142,6 +143,7 @@ class CustomOBJ extends Geometry {
         var uv = [textures[index * 2], textures[index * 2 + 1]];
 
         this.vertices[i].uv = uv;
+        //this.vertices[i].texCoord = uv;
       }
     }
   }
