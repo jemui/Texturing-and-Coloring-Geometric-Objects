@@ -15,15 +15,21 @@ class CustomOBJ extends Geometry {
    * @param color An optional color object with r,g,b,a components
    * @returns {LoadedOBJ} Constructed LoadedOBJ
    */
-  constructor(shader, objStr, imgPath) {
+  constructor(shader, objStr, image, imgPath) {
     super(shader);
-    console.log("loaded " + imgPath);
-    
+    console.log("loaded " + image);
+    this.image = image;
+
     // If an image path/data url is provided, then load/save that image as a texture
+    if ( this.image != null) {
+      var self = this;
+      var callback = function(texture) { self.textures.push(texture); };
+    }
+
     if (imgPath != null) {
       var self = this;
       var callback = function(texture) { self.textures.push(texture); };
-      load2DTexture(imgPath, gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, callback);
+     // load2DTexture(imgPath, gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, callback);
     }
 
     // Construct the Mesh object containg the OBJ file's information
@@ -143,7 +149,7 @@ class CustomOBJ extends Geometry {
         var uv = [textures[index * 2], textures[index * 2 + 1]];
 
         this.vertices[i].uv = uv;
-        //this.vertices[i].texCoord = uv;
+        this.vertices[i].texCoord = uv;
       }
     }
   }
@@ -195,7 +201,6 @@ class CustomOBJ extends Geometry {
 
   // Rotate the object
   render() {
-
        this.rotationMatrix = new Matrix4();
        this.rotationMatrix.setRotate(1, 0, 1, 0);
        this.modelMatrix = this.modelMatrix.multiply(this.rotationMatrix);

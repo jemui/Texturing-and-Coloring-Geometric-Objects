@@ -1,6 +1,10 @@
 /**
  * Specifies a Cube. A subclass of geometry.
- *
+ * 
+ * Bug: 
+ * New textures replace old ones. 
+ * New textures are created and textured, but old ones are ignored. 
+ * 
  * @author Lucas N. Ferreira
  * @this {Cube}
  */
@@ -10,29 +14,84 @@ class Cube extends Geometry {
    *
    * @constructor
    * @param {Shader} shader Shading object used to shade geometry
+   * @param {Image} image Takes in texture for texture coordinates (Optional)
+   * @param {Custom} custom Renders initial cube differently (Optional)
    * @returns {Cube} Cube created
    */
-  constructor(shader, x, y, image) { //image
-      super(shader, x, y, image);
+  constructor(shader, x, y, image, custom) { //image
+      super(shader, x, y);
 
       this.vertices = this.generateCubeVertices();
-
-      for(var i = 0; i < this.vertices.length; i+=6) {
-        this.vertices[i].texCoord = [1.0, 1.0];
-        this.vertices[i+1].texCoord = [0.0, 1.0];
-        this.vertices[i+2].texCoord = [0.0, 0.0];
-        this.vertices[i+3].texCoord = [0.0, 0.0];
-        this.vertices[i+4].texCoord = [1.0, 0.0];
-        this.vertices[i+5].texCoord = [1.0, 1.0];
-      }
-
-      console.log(this.vertices.length);
-      // vertices[0].texCoord works 
-      // can generate seperate uv arrays
-
       this.faces = {0: this.vertices};
       this.image = image;
-      console.log("cube: " + this.image);
+
+      if(this.image != null && custom == null) {
+          for(var i = 0; i < this.vertices.length; i+=6) {
+              this.vertices[i].texCoord   = [1.0, 1.0];
+              this.vertices[i+1].texCoord = [0.0, 1.0];
+              this.vertices[i+2].texCoord = [0.0, 0.0];
+              this.vertices[i+3].texCoord = [0.0, 0.0];
+              this.vertices[i+4].texCoord = [1.0, 0.0];
+              this.vertices[i+5].texCoord = [1.0, 1.0];
+          }
+      } else if (custom == 1) {
+            /**
+             * 1 face has the whole texture image, 
+             * 1 has the top half, 
+             * 1 has the bottom half, 
+             * 1 has the texture twice (on the left and right of each other), 
+             * 1 has the texture 9 times in a 3x3 grid.
+             * The last face has the whole texture image
+             */
+
+            // whole texture image
+            this.vertices[0].texCoord = [1.0, 1.0];
+            this.vertices[1].texCoord = [0.0, 1.0];
+            this.vertices[2].texCoord = [0.0, 0.0];
+            this.vertices[3].texCoord = [0.0, 0.0];
+            this.vertices[4].texCoord = [1.0, 0.0];
+            this.vertices[5].texCoord = [1.0, 1.0];
+
+            // top half  
+            this.vertices[6].texCoord = [1.0, 1.0];
+            this.vertices[7].texCoord = [0.0, 1.0];
+            this.vertices[8].texCoord = [0.0, 0.5];
+            this.vertices[9].texCoord = [0.0, 0.5];
+            this.vertices[10].texCoord = [0.5, 0.5];
+            this.vertices[11].texCoord = [1.0, 1.0];
+
+            // bottom half
+            this.vertices[12].texCoord = [0.5, 0.5];
+            this.vertices[13].texCoord = [0.0, 0.5];
+            this.vertices[14].texCoord = [0.0, 0.0];
+            this.vertices[15].texCoord = [0.0, 0.0];
+            this.vertices[16].texCoord = [1.0, 0.0];
+            this.vertices[17].texCoord = [0.5, 0.5];
+
+            // texture to the left and right
+            this.vertices[18].texCoord = [2.0, 1.0];
+            this.vertices[19].texCoord = [0.0, 1.0];
+            this.vertices[20].texCoord = [0.0, 0.0];
+            this.vertices[21].texCoord = [0.0, 0.0];
+            this.vertices[22].texCoord = [2.0, 0.0];
+            this.vertices[23].texCoord = [2.0, 1.0];
+    
+            // 3x3 grid
+            this.vertices[24].texCoord = [3.0, 3.0];
+            this.vertices[25].texCoord = [0.0, 3.0];
+            this.vertices[26].texCoord = [0.0, 0.0];
+            this.vertices[27].texCoord = [0.0, 0.0];
+            this.vertices[28].texCoord = [3.0, 0.0];
+            this.vertices[29].texCoord = [3.0, 3.0];  
+
+            // 6th face can be normal
+            this.vertices[30].texCoord = [1.0, 1.0];
+            this.vertices[31].texCoord = [0.0, 1.0];
+            this.vertices[32].texCoord = [0.0, 0.0];
+            this.vertices[33].texCoord = [0.0, 0.0];
+            this.vertices[34].texCoord = [1.0, 0.0];
+            this.vertices[35].texCoord = [1.0, 1.0];
+      }
       
       // Set initial position to tilt cube
       this.rotationMatrix = new Matrix4();
@@ -58,22 +117,11 @@ class Cube extends Geometry {
 
       // front face
       var vertex1 = new Vertex( x+size, y+size, z);  // v0 
-     // vertex1.texCoord = [1.0, 1.0];
-
       var vertex2 = new Vertex( x-size, y+size , z); // v1
-     // vertex2.texCoord = [0.0, 1.0];
-
       var vertex3 = new Vertex( x-size, y-size, z); // v2
-     // vertex3.texCoord = [0.0, 0.0];
-
       var vertex4 = new Vertex( x-size, y-size, z); // v2 
-    //  vertex4.texCoord = [0.0, 0.0];
-
       var vertex5 = new Vertex( x+size, y-size, z); // v3
-     // vertex5.texCoord = [1.0, 0.0];
-
       var vertex6 = new Vertex( x+size, y+size, z); // v0
-    //  vertex6.texCoord = [1.0, 1.0];
 
       vertices.push(vertex1);
       vertices.push(vertex2);
@@ -84,22 +132,11 @@ class Cube extends Geometry {
 
       // right face
       vertex1 = new Vertex( x+size, y+size, -z); // v5 
-     // vertex1.texCoord = [1.0, 1.0];
-
       vertex2 = new Vertex( x+size, y+size , z); // v0
-     // vertex2.texCoord = [0.0, 1.0];
-
       vertex3 = new Vertex( x+size, y-size, z); // v3
-    //  vertex3.texCoord = [0.0, 0.0];
-
       vertex4 = new Vertex( x+size, y-size, z); // v3
-    //  vertex4.texCoord = [0.0, 0.0];
-
       vertex5 = new Vertex( x+size, y-size, -z); // v4
-    //  vertex5.texCoord = [1.0, 0.0];
-
       vertex6 = new Vertex( x+size, y+size, -z); // v5
-    //  vertex6.texCoord = [1.0, 1.0];
 
       vertices.push(vertex1);
       vertices.push(vertex2);
@@ -110,22 +147,11 @@ class Cube extends Geometry {
 
       // back face
       vertex1 = new Vertex( x+size, y+size, -z); // v5 
-     // vertex1.texCoord = [0.0, 1.0];
-
       vertex2 = new Vertex( x-size, y+size , -z); // v6
-    //  vertex2.texCoord = [1.0, 1.0];
-
       vertex3 = new Vertex( x-size, y-size, -z); // v7
-     // vertex3.texCoord = [1.0, 0.0];
-
       vertex4 = new Vertex( x-size, y-size, -z); // v7
-     // vertex4.texCoord = [1.0, 0.0];
-
       vertex5 = new Vertex( x+size, y-size, -z); // v4
-    //  vertex5.texCoord = [0.0, 0.0];
-
       vertex6 = new Vertex( x+size, y+size, -z); // v5
-      //vertex6.texCoord = [0.0, 1.0];
 
       vertices.push(vertex1);
       vertices.push(vertex2);
@@ -136,22 +162,11 @@ class Cube extends Geometry {
 
       // left face
       vertex1 = new Vertex( x-size, y+size, -z); // v6 
-     // vertex1.texCoord = [0.0, 1.0];
-
       vertex2 = new Vertex( x-size, y+size , z); // v1
-     // vertex2.texCoord = [1.0, 1.0];
-
       vertex3 = new Vertex( x-size, y-size, z); // v2
-    //  vertex3.texCoord = [1.0, 0.0];
-
       vertex4 = new Vertex( x-size, y-size, z); // v2
-      //vertex4.texCoord = [1.0, 0.0];
-
       vertex5 = new Vertex( x-size, y-size, -z); // v7
-     // vertex5.texCoord = [0.0, 0.0];
-
       vertex6 = new Vertex( x-size, y+size, -z); // v6
-    //  vertex6.texCoord = [0.0, 1.0];
 
       vertices.push(vertex1);
       vertices.push(vertex2);
@@ -162,22 +177,11 @@ class Cube extends Geometry {
 
       // top face
       vertex1 = new Vertex( x+size, y+size, -z); // v5 
-     // vertex1.texCoord = [0.0, 1.0];
-
       vertex2 = new Vertex( x-size, y+size , -z); // v6
-    //  vertex2.texCoord = [1.0, 1.0];
-
       vertex3 = new Vertex( x-size, y+size, z); // v1
-    //  vertex3.texCoord = [1.0, 0.0];
-
       vertex4 = new Vertex( x-size, y+size, z); // v1
-   //   vertex4.texCoord = [1.0, 0.0];
-
       vertex5 = new Vertex( x+size, y+size, z); // v0
-    //  vertex5.texCoord = [0.0, 0.0];
-
       vertex6 = new Vertex( x+size, y+size, -z); // v5
-    //  vertex6.texCoord = [0.0, 1.0];
 
       vertices.push(vertex1);
       vertices.push(vertex2);
@@ -188,23 +192,12 @@ class Cube extends Geometry {
 
       // bottom face
       vertex1 = new Vertex( x+size, y-size, -z); // v4
-     // vertex1.texCoord = [0.0, 1.0];
-
       vertex2 = new Vertex( x-size, y-size , -z); // v7
-    //  vertex2.texCoord = [1.0, 1.0];
-
       vertex3 = new Vertex( x-size, y-size, z); // v2
-    //  vertex3.texCoord = [1.0, 0.0];
-
       vertex4 = new Vertex( x-size, y-size, z); // v2
-     // vertex4.texCoord = [1.0, 0.0];
-
       vertex5 = new Vertex( x+size, y-size, z); // v3
-     // vertex5.texCoord = [0.0, 0.0];
-
       vertex6 = new Vertex( x+size, y-size, -z); // v4
-    //  vertex6.texCoord = [0.0, 1.0];
-
+  
       vertices.push(vertex1);
       vertices.push(vertex2);
       vertices.push(vertex3);

@@ -65,7 +65,7 @@ class Renderer {
                     this.loadTexture(this.textures[geometry.image.src], geometry.image);
                 }
             }
-
+            
             // Draw geometry
             this.sendVertexDataToGLSL(geometry.data, geometry.dataCounts, geometry.shader);
             this.sendIndicesToGLSL(geometry.indices);

@@ -12,12 +12,11 @@ class Circle extends Geometry {
    * @param {Shader} shader Shading object used to shade geometry
    * @returns {Circle} Circle created
    */
-  constructor(shader, x, y, image) {
+  constructor(shader, x, y) {
       super(shader,x,y);
 
       this.vertices = this.generateCircleVertices();
       this.faces = {0: this.vertices};
-      this.image = null;
 
       this.transX = (Math.random()*0.008)-0.004;
       this.transY = (Math.random()*0.008)-0.004;
@@ -57,7 +56,7 @@ class Circle extends Geometry {
          vertices.push(new Vertex(x3, y3, z));
      
       }
-       return vertices;
+      return vertices;
   }
 
   render() {
@@ -72,6 +71,7 @@ class Circle extends Geometry {
           this.transX = (Math.random()*0.008)-0.004;
           this.transY = (Math.random()*0.008)-0.004;
       }
+      
       this.modelMatrix = this.modelMatrix.multiply(this.translationMatrix);
 
       this.shader.setUniform("u_ModelMatrix", this.modelMatrix.elements);

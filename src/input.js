@@ -1,6 +1,8 @@
 var _inputHandler = null;
 var triangle = true;
 var down = false;
+var initCube = true;
+var loadedTexture = 0;
 
 /**
  * Specifies a Input Handler. Used to parse input events from a HTML page.
@@ -55,13 +57,13 @@ class InputHandler {
             return;
         }
 
-        
         fileReader.readAsText(objFile);
         fileReader.onloadend = function() {
-            console.log("texture: "+ _inputHandler.image);
-            var customObj = new CustomOBJ(shader, fileReader.result);
-            console.log(customObj);
+            var customObj = new CustomOBJ(shader, fileReader.result, _inputHandler.image);
             _inputHandler.scene.addGeometry(customObj);
+
+            loadedTexture = 1;
+            console.log(customObj);
         }
     }
 
@@ -78,11 +80,13 @@ class InputHandler {
             _inputHandler.image = image;
         };
 
+        // Create image path
         var imgPath = document.getElementById("texInput").value;
         var imgPathSplit = imgPath.split("\\");
 
         // Tell the browser to load an image
         image.src = 'objs/' + imgPathSplit[imgPathSplit.length - 1];
+        loadedTexture = 1;
         console.log("loaded "+ image.src);
         return true;
     }
@@ -97,20 +101,41 @@ class InputHandler {
         console.log(ev.clientX, ev.clientY);
 
         down = true;
-
+        initCube = false;
+        
         // Passes in mouse position to shapes
-        // each triangle should have its own function call to update itself
-        if(triangle == true && document.getElementById("tri").innerHTML == "true") {
+        // loadedTexture value avoids colored texture values at 0
+        if (triangle == true && document.getElementById("tri").innerHTML == "true") {
+            loadedTexture = 0;
+            
             var shape = new Triangle(shader,ev.clientX, ev.clientY,this.image);
             this.scene.addGeometry(shape);        
-        } else if(document.getElementById("sqr").innerHTML == "true") {
+
+        } else if (document.getElementById("sqr").innerHTML == "true") {
+            loadedTexture = 0;
+            
             var shape = new Square(shader,ev.clientX, ev.clientY);
             this.scene.addGeometry(shape);
-        } else if(document.getElementById("cir").innerHTML == "true"){
+
+        } else if (document.getElementById("cir").innerHTML == "true"){
+            loadedTexture = 0;
+            
             var shape = new Circle(shader,ev.clientX, ev.clientY);
             this.scene.addGeometry(shape);
+
         } else if(document.getElementById("cube").innerHTML == "true"){
-            var shape = new Cube(shader,ev.clientX, ev.clientY, this.image);
+            // should only be set to 0 if no texture has been loaded
+            if (loadedTexture == 0)
+                loadedTexture = 0;
+            else 
+                loadedTexture = 1;
+
+            var shape = new Cube(shader, ev.clientX, ev.clientY, this.image);
+
+            // create cube with a textured image
+            if(this.image != null)
+                initCube = true;
+            
             this.scene.addGeometry(shape);
         }
     }
@@ -127,18 +152,35 @@ class InputHandler {
      * Function that draws shapes when mouse is down and moving
      */
      move(ev) {
+        initCube = false;
+
         if(down == true) {
             if(triangle == true && document.getElementById("tri").innerHTML == "true") {
+                loadedTexture = 0;
+
                 var shape = new Triangle(shader,ev.clientX, ev.clientY);
                 this.scene.addGeometry(shape);
+
             } else if(document.getElementById("sqr").innerHTML == "true") {
+                loadedTexture = 0;
+
                 var shape = new Square(shader,ev.clientX, ev.clientY);
                 this.scene.addGeometry(shape);
+
             } else if(document.getElementById("cir").innerHTML == "true"){
+                loadedTexture = 0;
+
                 var shape = new Circle(shader,ev.clientX, ev.clientY);
                 this.scene.addGeometry(shape);
+
             } else if(document.getElementById("cube").innerHTML == "true"){
-                var shape = new Cube(shader,ev.clientX, ev.clientY);
+                // should only be set to 0 if no texture has been loaded
+                if (loadedTexture == 0)
+                    loadedTexture = 0;
+                else 
+                    loadedTexture = 1;
+
+                var shape = new Cube(shader,ev.clientX, ev.clientY, this.image);
                 this.scene.addGeometry(shape);
             }
          }
@@ -165,45 +207,50 @@ function clear() {
 
   function clearCanvas() {
     main();
+
+    // Reset Variable
+    loadedTexture = 0;
+    initCube = true;
   }
 }
 
+// Function to select shapes
 function shape() {
-  // Event listeners for buttons
-  document.getElementById("square").addEventListener("click", square);
-  document.getElementById("triangle").addEventListener("click", triangle);
-  document.getElementById("circle").addEventListener("click", circle);
-  document.getElementById("tilted").addEventListener("click", cube);
+    // Event listeners for buttons
+    document.getElementById("square").addEventListener("click", square);
+    document.getElementById("triangle").addEventListener("click", triangle);
+    document.getElementById("circle").addEventListener("click", circle);
+    document.getElementById("tilted").addEventListener("click", cube);
 
   // Select square
   function square() {
-    document.getElementById("sqr").innerHTML = "true";
-    document.getElementById("tri").innerHTML = "false";
-    document.getElementById("cir").innerHTML = "false";
-    document.getElementById("cube").innerHTML = "false";
+      document.getElementById("sqr").innerHTML = "true";
+      document.getElementById("tri").innerHTML = "false";
+      document.getElementById("cir").innerHTML = "false";
+      document.getElementById("cube").innerHTML = "false";
   }
 
   // Select triangle
   function triangle() {
-    document.getElementById("sqr").innerHTML = "false";
-    document.getElementById("tri").innerHTML = "true";
-    document.getElementById("cir").innerHTML = "false";
-    document.getElementById("cube").innerHTML = "false";
+      document.getElementById("sqr").innerHTML = "false";
+      document.getElementById("tri").innerHTML = "true";
+      document.getElementById("cir").innerHTML = "false";
+      document.getElementById("cube").innerHTML = "false";
   }
 
   // Select circle
   function circle() {
-    document.getElementById("sqr").innerHTML = "false";
-    document.getElementById("tri").innerHTML = "false";
-    document.getElementById("cir").innerHTML = "true";
-    document.getElementById("cube").innerHTML = "false";
+      document.getElementById("sqr").innerHTML = "false";
+      document.getElementById("tri").innerHTML = "false";
+      document.getElementById("cir").innerHTML = "true";
+      document.getElementById("cube").innerHTML = "false";
   }
 
   // Select Cube
   function cube() {
-    document.getElementById("sqr").innerHTML = "false";
-    document.getElementById("tri").innerHTML = "false";
-    document.getElementById("cir").innerHTML = "false";
-    document.getElementById("cube").innerHTML = "true";
+      document.getElementById("sqr").innerHTML = "false";
+      document.getElementById("tri").innerHTML = "false";
+      document.getElementById("cir").innerHTML = "false";
+      document.getElementById("cube").innerHTML = "true";
   }
 }

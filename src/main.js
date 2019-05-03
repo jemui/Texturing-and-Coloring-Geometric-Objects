@@ -34,13 +34,17 @@ function main() {
   renderer = new Renderer(gl, scene, null);
   renderer.start();
 
-//  var image = new Image();
- // image.src = 'objs/sky.jpg';
+  // Load the initial textured cube
+  var image = new Image();
+  image.src = 'objs/sky.jpg';
 
-  var shape = new Cube(shader, 0.5, 0.5);
-  scene.addGeometry(shape);
+  // Add the cube into the scene once the image is loaded
+  image.onload = function() {
+    var shape = new Cube(shader, 130, 200, image, 1);
+    scene.addGeometry(shape);
+  }
 
-  // Update global counter for fluctuating triangles
+  // Update global counter for fluctuating triangles and moving circles
   var tick = function() {
     count++;
     timer++;
